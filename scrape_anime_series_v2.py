@@ -92,12 +92,20 @@ class AnimeSeriesScraper:
                     # Ambil title dari link text
                     title = link.get_text(strip=True)
                     title = self.clean_title(title)
+
+                    # Ambil gambar jika tersedia
+                    image_tag = link.find('img')
+                    image_src = image_tag.get('data-src') if image_tag else ''
+                    if not image_src and image_tag:
+                        image_src = image_tag.get('src', '')
+                    image_url = urljoin(self.base_url, image_src) if image_src else ''
                     
                     # Filter: title tidak boleh kosong atau hanya angka/simbol
                     if title and not re.match(r'^[\d«»\s]*$', title) and title.lower() not in ['home', 'search', 'previous']:
                         series_list.append({
                             'title': title,
-                            'url': full_url
+                            'url': full_url,
+                            'image_url': image_url
                         })
         
         return series_list
@@ -148,12 +156,20 @@ class AnimeSeriesScraper:
                         seen_urls.add(full_url)
                         title = link.get_text(strip=True)
                         title = self.clean_title(title)
+
+                        # Ambil gambar jika tersedia
+                        image_tag = link.find('img')
+                        image_src = image_tag.get('data-src') if image_tag else ''
+                        if not image_src and image_tag:
+                            image_src = image_tag.get('src', '')
+                        image_url = urljoin(self.base_url, image_src) if image_src else ''
                         
                         # Filter: title tidak boleh kosong atau hanya angka/simbol
                         if title and not re.match(r'^[\d«»\s]*$', title) and title.lower() not in ['home', 'search', 'previous']:
                             page_series.append({
                                 'title': title,
-                                'url': full_url
+                                'url': full_url,
+                                'image_url': image_url
                             })
             
             if not page_series:
@@ -188,7 +204,7 @@ class AnimeSeriesScraper:
         """
         import csv
         with open(filename, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=['title', 'url'])
+            writer = csv.DictWriter(f, fieldnames=['title', 'url', 'image_url'])
             writer.writeheader()
             writer.writerows(data)
         print(f"Data saved to {filename}")
@@ -201,7 +217,7 @@ def main():
     print("ANIME SERIES SCRAPER - OTAKUDESU.FIT (v2)")
     print("=" * 60)
     
-    series_list = scraper.scrape_with_pagination(max_pages=52)
+    series_list = scraper.scrape_with_pagination(max_pages=2)
     
     # Hapus duplikat berdasarkan URL
     unique_series = []
