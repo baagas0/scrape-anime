@@ -53,6 +53,23 @@ class AnimeSeriesScraper:
         # Hapus whitespace berlebih
         title = ' '.join(title.split())
         return title
+
+    def extract_year(self, detail_url):
+        """
+        Ambil tahun rilis dari halaman detail jika ada elemen dengan class 'addyear'
+        """
+        html_content = self.fetch_page(detail_url)
+        if not html_content:
+            return ''
+
+        soup = BeautifulSoup(html_content, 'html.parser')
+        year_tag = soup.find(class_='addyear')
+        if not year_tag:
+            return ''
+
+        year_text = year_tag.get_text(strip=True)
+        match = re.search(r'(\d{4})', year_text)
+        return match.group(1) if match else year_text
     
     def scrape_series_list(self):
         """
@@ -93,19 +110,23 @@ class AnimeSeriesScraper:
                     title = link.get_text(strip=True)
                     title = self.clean_title(title)
 
-                    # Ambil gambar jika tersedia
+                        # Ambil gambar jika tersedia
                     image_tag = link.find('img')
                     image_src = image_tag.get('data-src') if image_tag else ''
                     if not image_src and image_tag:
                         image_src = image_tag.get('src', '')
                     image_url = urljoin(self.base_url, image_src) if image_src else ''
+
+                    # Ambil tahun rilis dari halaman detail
+                    year = self.extract_year(full_url)
                     
                     # Filter: title tidak boleh kosong atau hanya angka/simbol
                     if title and not re.match(r'^[\d«»\s]*$', title) and title.lower() not in ['home', 'search', 'previous']:
                         series_list.append({
                             'title': title,
                             'url': full_url,
-                            'image_url': image_url
+                            'image_url': image_url,
+                            'year': year
                         })
         
         return series_list
@@ -163,13 +184,17 @@ class AnimeSeriesScraper:
                         if not image_src and image_tag:
                             image_src = image_tag.get('src', '')
                         image_url = urljoin(self.base_url, image_src) if image_src else ''
+
+                        # Ambil tahun rilis dari halaman detail
+                        year = self.extract_year(full_url)
                         
                         # Filter: title tidak boleh kosong atau hanya angka/simbol
                         if title and not re.match(r'^[\d«»\s]*$', title) and title.lower() not in ['home', 'search', 'previous']:
                             page_series.append({
                                 'title': title,
                                 'url': full_url,
-                                'image_url': image_url
+                                'image_url': image_url,
+                                'year': year
                             })
             
             if not page_series:
@@ -204,7 +229,7 @@ class AnimeSeriesScraper:
         """
         import csv
         with open(filename, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=['title', 'url', 'image_url'])
+            writer = csv.DictWriter(f, fieldnames=['title', 'url', 'image_url', 'year'])
             writer.writeheader()
             writer.writerows(data)
         print(f"Data saved to {filename}")
