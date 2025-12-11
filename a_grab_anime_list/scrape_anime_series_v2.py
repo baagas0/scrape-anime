@@ -242,7 +242,7 @@ def main():
     print("ANIME SERIES SCRAPER - OTAKUDESU.FIT (v2)")
     print("=" * 60)
     
-    series_list = scraper.scrape_with_pagination(max_pages=2)
+    series_list = scraper.scrape_with_pagination(max_pages=52)
     
     # Hapus duplikat berdasarkan URL
     unique_series = []
@@ -263,8 +263,8 @@ def main():
         print(f"   URL: {series['url']}\n")
     
     # Simpan ke file
-    scraper.save_to_json(unique_series, './anime_series_clean.json')
-    scraper.save_to_csv(unique_series, './anime_series_clean.csv')
+    scraper.save_to_json(unique_series, './a_grab_anime_list/anime_series_clean.json')
+    scraper.save_to_csv(unique_series, './a_grab_anime_list/anime_series_clean.csv')
 
 if __name__ == "__main__":
     main()
