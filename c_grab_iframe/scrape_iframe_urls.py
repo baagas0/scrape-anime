@@ -163,7 +163,7 @@ def main():
     print("=" * 60)
     
     # Scrape all episodes (limit to 10 for testing)
-    scraper.scrape_all_episodes(input_file, output_file, max_episodes=10)
+    scraper.scrape_all_episodes(input_file, output_file, max_episodes=999999999999999)
 
 if __name__ == "__main__":
     main()
